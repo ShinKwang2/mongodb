@@ -3,6 +3,9 @@ const blogRouter = Router();
 const { Blog } = require("../models/Blog");
 const { User } = require("../models/User");
 const { isValidObjectId } = require("mongoose");
+const { commentRouter } = require("./commentRoute");
+
+blogRouter.use("/:blogId/comment", commentRouter);
 
 blogRouter.post("/", async (req, res) => {
     try {
@@ -90,14 +93,14 @@ blogRouter.patch("/:blogId/live", async (req, res) => {
             res.status(400).send({ err: "blogId is invalid" });
         }
 
-        const { isLive } = req.body;
-        if (typeof isLive !== "boolean") {
+        const { islive } = req.body;
+        if (typeof islive !== "boolean") {
             res.status(400).send({ err: "boolean islive is required" });
         }
 
         const blog = await Blog.findByIdAndUpdate(
             blogId,
-            { isLive },
+            { islive },
             { new: true },
         );
         return res.send({ blog });

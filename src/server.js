@@ -3,15 +3,19 @@ const app = express();
 const { userRouter } = require("./routes/userRoute");
 const { blogRouter } = require("./routes/blogRoute");
 const mongoose = require("mongoose");
+const { generateFakeData } = require("../faker");
 
 const MONGO_URI =
-    "mongodb+srv://shinkwang:1GFEl72mewYYuOzU@mongodbtutorial.qboq1cz.mongodb.net/blogService?retryWrites=true&w=majority";
+    "mongodb+srv://shinkwang:OYdTCc0CjXj47gjm@mongodbtutorial.qboq1cz.mongodb.net/blogService?retryWrites=true&w=majority";
 
 const server = async () => {
     try {
         await mongoose.connect(MONGO_URI);
-        mongoose.set("debug", true);
         console.log("MongoDB connected");
+        
+        mongoose.set("debug", true);
+        // await generateFakeData(100, 10, 300);
+
         app.use(express.json());
 
         app.use("/user", userRouter);
@@ -20,7 +24,7 @@ const server = async () => {
         app.listen(3000, async () =>
             console.log("server listening on port 3000 123"),
         );
-    } catch {
+    } catch (err) {
         console.log(err);
     }
 };

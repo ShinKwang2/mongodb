@@ -7,8 +7,9 @@ const UserSchema = new Schema({
         last:  { type: String, required: true }
     },
     age: Number,
-    email: String
+    email: String,
 }, { timestamps: true })
 
-const User = model('user', UserSchema);
+const User = model("user", UserSchema);
+
 module.exports = { User };

@@ -5,22 +5,22 @@ const { User } = require("../models/User");
 const { isValidObjectId } = require("mongoose");
 const { commentRouter } = require("./commentRoute");
 
-blogRouter.use("/:blogId/comment", commentRouter);
+blogRouter.use("/:blogId/comments", commentRouter);
 
 blogRouter.post("/", async (req, res) => {
     try {
         const { title, content, islive, userId } = req.body;
         if (typeof title !== "string") {
-            res.status(400).send({ err: "title is required" });
+            return res.status(400).send({ err: "title is required" });
         }
         if (typeof content !== "string") {
-            res.status(400).send({ err: "content is required" });
+            return res.status(400).send({ err: "content is required" });
         }
         if (islive && typeof islive !== "boolean") {
-            res.status(400).send({ err: "islive must be a boolean" });
+            return res.status(400).send({ err: "islive must be a boolean" });
         }
         if (!isValidObjectId(userId)) {
-            res.status(400).send({ err: "userId is invalid" });
+            return res.status(400).send({ err: "userId is invalid" });
         }
 
         let user = await User.findById(userId);
@@ -37,7 +37,9 @@ blogRouter.post("/", async (req, res) => {
 
 blogRouter.get("/", async (req, res) => {
     try {
-        const blogs = await Blog.find();
+        const blogs = await Blog.find({})
+            .limit(20)
+            .populate([{ path: "user" }, { path: "comments", populate: { path: "user", select: "username" }}]);
         return res.send({ blogs });
     } catch (err) {
         console.log(err);

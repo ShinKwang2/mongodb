@@ -33,13 +33,16 @@ commentRouter.post("/", async (req, res) => {
         if (!blog || !user) {
             return res.status(400).send({ err: "blog or user not exist" });
         }
-        if (!blog.isLive) {
+        if (!blog.islive) {
             return res.status(400).send({ err: "blog is not available" });
         }
 
-        const comment = new Comment({ content, user, blog });
-        await comment.save();
-        return res.send({ comment });
+        const comment = new Comment({ content, user, userFullName: `${user.name.first} ${user.name.last}`, blog });
+        await Promise.all([
+            comment.save(), 
+            Blog.updateOne({ _id: blogId }, { $push: { comments: comment }}),
+        ]);
+        return res.send({ comment }); 
     } catch (err) {
         return res.status(400).send({ err: err.message });
     }

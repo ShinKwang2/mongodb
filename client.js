@@ -7,12 +7,15 @@ const URI = "http://localhost:3000";
 //      - blogsLimit 20일 때: 6초 초반
 // populate 사용하는 방법
 //      - blogLimit 20일 때: 0.4초 이하
+// 문서 내장 사용하는 방법
+//      - blogLimit 20일 때: 0.04초
 
 const test = async () => {
     console.time("loading time: ");
     let { 
         data: { blogs },
     } = await axios.get(`${URI}/blog`);
+    // console.dir(blogs, {depth: 10});
 
     // blogs = await Promise.all(blogs.map(async blog => {
 

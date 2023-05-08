@@ -1,8 +1,7 @@
 const { Router } = require("express");
 const userRouter = Router();
 const mongoose = require("mongoose");
-const { User } = require("../models/User");
-const { Blog } = require("../models");
+const { User, Blog, Comment } = require("../models");
 
 userRouter.get("/", async (req, res) => {
     try {
@@ -50,7 +49,17 @@ userRouter.delete("/:userId", async (req, res) => {
         const { userId } = req.params;
         if (!mongoose.isValidObjectId(userId))
             return res.status(400).send({ err: "Invalid userId" });
-        const user = await User.findOneAndDelete({ _id: userId });
+
+        const [user] = await Promise.all([
+            User.findOneAndDelete({ _id: userId }),
+            Blog.deleteMany({ "user._id": userId }),
+            Blog.updateMany(
+                { "comments.user": userId },
+                { $pull: { comments: { user: userId } } },
+            ),
+            Comment.deleteMany({ user: userId }),
+        ]);
+
         return res.send({ user });
     } catch (err) {
         console.log(err);

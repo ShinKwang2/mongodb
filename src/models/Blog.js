@@ -19,6 +19,8 @@ const BlogSchema = new Schema(
     { timestamps: true },
 );
 
+BlogSchema.index({ "user._id": 1, updatedAt: 1 });
+
 // BlogSchema.virtual("comments", {
 //     ref: "comment",
 //     localField: "_id",

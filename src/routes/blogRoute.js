@@ -37,7 +37,13 @@ blogRouter.post("/", async (req, res) => {
 
 blogRouter.get("/", async (req, res) => {
     try {
-        const blogs = await Blog.find({}).limit(20);
+        let { page } = req.query;
+        console.log(page);
+        page = parseInt(page);
+        const blogs = await Blog.find({})
+            .sort({ updatedAt: -1 })
+            .skip(page * 3)
+            .limit(3);
         // .populate([{ path: "user" }, { path: "comments", populate: { path: "user", select: "username" }}]);
         return res.send({ blogs });
     } catch (err) {

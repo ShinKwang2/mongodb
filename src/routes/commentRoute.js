@@ -4,14 +4,17 @@ const commentRouter = Router({ mergeParams: true });
 const { Comment } = require("../models/Comment");
 const { Blog } = require("../models/Blog");
 const { User } = require("../models/User");
-const { isValidObjectId } = require("mongoose");
+const { isValidObjectId, startSession } = require("mongoose");
 
 /*
     /blog/:blogId/comment
 */
 
 commentRouter.post("/", async (req, res) => {
+    // const session = await startSession();
+    let comment;
     try {
+        // await session.withTransaction(async () => {
         const { blogId } = req.params;
         const { content, userId } = req.body;
 
@@ -26,8 +29,8 @@ commentRouter.post("/", async (req, res) => {
         }
 
         const [blog, user] = await Promise.all([
-            Blog.findById(blogId),
-            User.findById(userId),
+            Blog.findById(blogId, {}, {}),
+            User.findById(userId, {}, {}),
         ]);
 
         if (!blog || !user) {
@@ -37,29 +40,60 @@ commentRouter.post("/", async (req, res) => {
             return res.status(400).send({ err: "blog is not available" });
         }
 
-        const comment = new Comment({
+        comment = new Comment({
             content,
             user,
             userFullName: `${user.name.first} ${user.name.last}`,
-            blog,
+            blog: blogId,
         });
+        // await session.abortTransaction();
+
+        // await Promise.all([
+        //     comment.save(),
+        //     Blog.updateOne({ _id: blogId }, { $push: { comments: comment } }),
+        // ]);
+
+        // blog.commentsCount++;
+        // blog.comments.push(comment);
+        // if (blog.commentsCount > 3) {
+        //     blog.comments.shift();
+        // }
+
+        // await Promise.all([comment.save({}), blog.save()]);
+        // });
+
         await Promise.all([
             comment.save(),
-            Blog.updateOne({ _id: blogId }, { $push: { comments: comment } }),
+            Blog.updateOne(
+                { _id: blogId },
+                {
+                    $inc: { commentsCount: 1 },
+                    $push: { comments: { $each: [comment], $slice: -3 } },
+                },
+            ),
         ]);
+
         return res.send({ comment });
     } catch (err) {
         return res.status(400).send({ err: err.message });
+    } finally {
+        // await session.endSession();
     }
 });
 
 commentRouter.get("/", async (req, res) => {
+    let { page = 0 } = req.query;
+    page = parseInt(page);
     const { blogId } = req.params;
     if (!isValidObjectId(blogId)) {
         return res.status(400).send({ err: "blogId is invalid" });
     }
+    const comments = await Comment.find({ blog: blogId })
+        .sort({ createdAt: -1 })
+        .skip(page * 3)
+        .limit(3);
 
-    const comments = await Comment.find({ blog: blogId });
+    // const comments = await Comment.find({ blog: blogId });
     return res.send({ comments });
 });
 

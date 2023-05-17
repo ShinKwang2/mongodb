@@ -2,6 +2,7 @@ const { Router } = require("express");
 const blogRouter = Router();
 const { Blog } = require("../models/Blog");
 const { User } = require("../models/User");
+const { Comment } = require("../models/Comment");
 const { isValidObjectId } = require("mongoose");
 const { commentRouter } = require("./commentRoute");
 
@@ -60,7 +61,10 @@ blogRouter.get("/:blogId", async (req, res) => {
         }
 
         const blog = await Blog.findOne({ _id: blogId });
-        return res.send({ blog });
+        const commentCount = await Comment.find({
+            blog: blogId,
+        }).countDocuments();
+        return res.send({ blog, commentCount });
     } catch (err) {
         console.log(err);
         res.status(500).send({ err: err.message });

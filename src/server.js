@@ -26,11 +26,11 @@ const server = async () => {
         app.use("/user", userRouter);
         app.use("/blog", blogRouter);
 
-        app.listen(3000, async () => {
+        app.listen(PORT, async () => {
             console.log(`server listening on port ${PORT}`);
-            console.time("insert time: ");
+            // console.time("insert time: ");
             // await generateFakeData(10, 2, 10);
-            console.timeEnd("insert time: ");
+            // console.timeEnd("insert time: ");
         });
     } catch (err) {
         console.log(err);
